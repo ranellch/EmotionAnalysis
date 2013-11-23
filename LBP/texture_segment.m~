@@ -113,9 +113,7 @@ Iout = cat(3,I,I,I);
      end
      binmask = logical(binmask);
      bordermask = bwperim(binmask);
-     for j = 1:3
-        Iout(bordermask,j) = cmap(i,j);
-     end
+     Iout(bordermask,j) = cmap(i,:);
  end
 
 Iout = Iout(1:M,1:N,:);
