@@ -1,5 +1,5 @@
 function [ Iseg, data ] = LBP_cluster( I, dim, r, k )
-%LBP_CLUSTER(I, dim, k) Breaks I up into (dim) by (dim) pixel blocks and obtains 256 bin LBP histograms with patterns defined on radius r.  
+%LBP_CLUSTER(I, dim, r, k) Breaks I up into (dim) by (dim) pixel blocks and obtains 256 bin LBP histograms with patterns defined on radius r.  
 %(k) clusters are determined using k-Means and recolored image Iseg is
 %provided as output along with binary images of clusters and their centers
 %(feature vectors) in data.cluster and data.center respectively
