@@ -1,8 +1,8 @@
-function [ Iseg ] = gabor_cluster( I,k )
+function [ Iseg, centers ] = gabor_cluster( I,k )
 %GABOR_CLUSTER(I, k) Turns N-dimensional Gabor wavelet filtered image into
 %standard 2D image with values normalized from 0 to k where 
-%k clusters are determined using k-Means and recolored image Iseg is
-%provided as output
+%k clusters are determined using k-Means. Recolored image 'Iseg' is
+%provided as output, along with cluster centroids in 'centers'
 
 %run gabor on image
 J = apply_gabor_wavelet(I,0);
@@ -17,7 +17,7 @@ for i= 1:num_rows
         allVecs(index,:)=J(i,j,:);
     end
 end
-[idx, c]= kmeans(allVecs,k,'EmptyAction','singleton');
+[idx, centers]= kmeans(allVecs,k,'EmptyAction','singleton');
 for i = 1:num_rows
     for j = 1:num_cols
         index = (i-1)*num_cols+j;
@@ -25,7 +25,7 @@ for i = 1:num_rows
     end
 end
 
-Iseg=uint8((Iseg./k)*255); %get grayscale image
-figure, imshow(Iseg)
+%show grayscale image
+figure, imshow(uint8((Iseg./k)*255))
 end
 
