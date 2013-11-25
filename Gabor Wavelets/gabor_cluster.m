@@ -25,7 +25,7 @@ for i = 1:num_rows
     end
 end
 
-Iseg=uint8(Iseg); %get grayscale image
+Iseg=uint8((Iseg./k)*255); %get grayscale image
 figure, imshow(Iseg)
 end
 
