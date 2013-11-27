@@ -15,8 +15,8 @@ Gabor_Mouth = apply_gabor_wavelet(Mouth);
 hists_Eyes = zeros(1,256*18);
 hists_Mouth = zeros(1,256*18);
 for i=1:18
-    hists_Eyes(((i-1)*256+1):i*256)=lbp(Gabor_Eyes(:,:,i),r,8,0,'nh');
-    hists_Mouth(((i-1)*256+1):i*256)=lbp(Gabor_Mouth(:,:,i),r,8,0,'nh');
+    hists_Eyes(((i-1)*256+1):i*256)=lbp(Gabor_Eyes(:,:,i),1,8,0,'nh');
+    hists_Mouth(((i-1)*256+1):i*256)=lbp(Gabor_Mouth(:,:,i),1,8,0,'nh');
 end
 
 %concatenate all feature vectors for eyes and mouth
