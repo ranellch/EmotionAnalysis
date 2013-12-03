@@ -8,7 +8,7 @@ Face = imcrop(I,BB);
 figure, imshow(Face);
 
 level = graythresh(Face);
-BW = im2bw(Face,0.9*level);
+BW = im2bw(0.75*Face,level);
 figure, imshow(BW);
 
 I_out = zeros(size(Face));

@@ -1,4 +1,4 @@
-function [Face] = segmentation(I)
+function [Face, Eyes, Mouth] = segmentation(I)
 
 % Errors at Jai_A.jpg, Jai_Su.jpg
 % Can't detect eyes in Jay_A2.jpg
@@ -11,11 +11,19 @@ function [Face] = segmentation(I)
 FDetect = vision.CascadeObjectDetector;
 BB = step(FDetect,I);
 
-%Crops image to just the face
+%Crops image to just the face, resize
 Face = imcrop(I,BB); 
+size(Face)
+Face = imresize(Face,[2000 2000], 'bilinear');
 figure
 imshow(Face); 
 title('Face');
+
+%Split into portions 
+Eyes = imcrop(Face, [1 1 size(Face,2) round(size(Face,1)/2)]);
+figure, imshow(Eyes)
+Mouth = imcrop(Face, [1 round(size(Face,1)/2) size(Face,2) size(Face,1)-round(size(Face,1)/2)]);
+figure, imshow(Mouth)
 end
 
 %% 
