@@ -22,8 +22,7 @@ function [nb] = build_classifier(filePath)
       title = txt{i,1};
       emotion = txt{i,2};
      % pause
-      I = rgb2gray(imread(title));
-      hist_vectors(i) = get_featvec(I);
+      hist_vectors(i) = get_featvec_LGBP(filePath);
       emotions{i} = emotion;
       % pause
     end
