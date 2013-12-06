@@ -15,7 +15,7 @@ function [nb] = build_classifier(filePath)
     
     [~,txt]=xlsread(filePath);
     numfiles = size(txt,1);
-    hist_vectors = zeros(numfiles,1);
+    hist_vectors = zeros(numfiles,256*18*2);
     emotions = cell(numfiles,1);
 
     for i = 1:numfiles
@@ -32,3 +32,4 @@ nb = NaiveBayes.fit(hist_vectors, emotions);
 nb.Prior = 'uniform';
 
 end
+
