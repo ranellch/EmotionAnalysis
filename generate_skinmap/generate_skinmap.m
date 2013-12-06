@@ -40,7 +40,7 @@ function [out, bin] = generate_skinmap(img_orig)
         out(r(i),c(i),:) = [0 0 255];
         bin(r(i),c(i)) = 1;
     end
-    imshow(img_orig);
-    figure; imshow(out);
-    figure; imshow(bin);
+%     imshow(img_orig);
+%     figure; imshow(out);
+%     figure; imshow(bin);
 end

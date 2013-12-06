@@ -14,10 +14,10 @@ BB = step(FDetect,grayI);
 
 %Crops image to just the face
 Face = imcrop(grayI,BB); 
-size(Face)
-figure
-imshow(Face); 
-title('Face');
+% size(Face)
+% figure
+% imshow(Face); 
+% title('Face');
 
 %CROP OUT MOUTH USING SKIN DETECTION
 [~,skinmap] = generate_skinmap(colorI);
@@ -32,8 +32,8 @@ CropBox = [minCol minRow maxCol - minCol maxRow - minRow];
 Mouth = imcrop(Face, [1 round(2*size(Face,1)/3) size(Face,2) size(Face,1)-round(2*size(Face,1)/3)]);
 Mouth = imcrop(Mouth, CropBox);
 Mouth = imresize(Mouth,[600 1600]);
-figure, imshow(Mouth);
-title('Mouth');
+% figure, imshow(Mouth);
+% title('Mouth');
 
 
 % 
@@ -47,10 +47,10 @@ BB(1:4) = [BB(1) BB(2)-(0.8*BB(4)) BB(3) 1.8*BB(4)];
 
 % Crop image to just eyes and eyebrows
 Eyes = imcrop(grayI, BB);
-size(Eyes)
+% size(Eyes)
 Eyes = imresize(Eyes,[600 1600], 'bilinear');
-figure, imshow(Eyes);
-title('Eyes');
+% figure, imshow(Eyes);
+% title('Eyes');
 
 end
 % 
