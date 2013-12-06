@@ -1,17 +1,14 @@
-function get_all_featvec()
+function get_all_featvec(filePath)
 
-dirpath = '451ProjectPictures/Labeled Pics/';
-imageFiles = dir(dirpath);
-names = setdiff({imageFiles.name},{'.','..'});
+[images,~]=xlsread(filePath);
 
-namePath = strcat(dirpath,names);
 
-numImages = length(names);
+numImages = length(images);
 
 all_featvec = zeros(numImages,256*18*2);
 
 for i = 1:numImages
-    all_featvec(i,:) = get_featvec_LGBP(namePath{i});
+    all_featvec(i,:) = get_featvec_LGBP(images{i});
 end
 
  xlwrite(all_featvc.xls, all_featvec);
