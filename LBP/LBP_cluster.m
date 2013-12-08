@@ -4,6 +4,8 @@ function [ Iseg, data ] = LBP_cluster( I, dim, r, k )
 %provided as output along with binary images of clusters and their centers
 %(feature vectors) in data.cluster and data.center respectively
 
+H=fspecial('gaussian',[10 10],5);
+I=imfilter(I,H);
 figure, imshow(I);
 
 %Mirror pad I so it is divisible by dim 

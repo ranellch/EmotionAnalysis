@@ -13,27 +13,24 @@ function [GaborTransforms] = apply_gabor_wavelet(I, debug)
     %Layer all the transformations 
     GaborTransforms = zeros(m, n, length(lambda) * length(theta));
     piece_count = 1;
-    gamma = 0.5;
+        
     %Iterate over all gabor wavelets
     for i=1:length(lambda)
-        p = 2*2.5*lambda(i)/gamma;
-        q = p;
+        [p, q] = size(wavelet);
         pad_height = 2^nextpow2(p + m - 1);
         pad_width = 2^nextpow2(q +  n - 1);
         I(pad_height, pad_width) = 0;
-        G = fft2(I);
         for j=1:length(theta)
 
             %Build the gabor wavelet
             [wavelet, ~] = morlet(lambda(i), theta(j), npeaks);
            
             %Convolve the img with the gabor wavelet
-            padded_wavelet=wavelet;
-            padded_wavelet(pad_height, pad_width) = 0;
-            C = ifft2(G.*fft2(padded_wavelet));
+            wavelet(pad_height, pad_width) = 0;
+            C = ifft2(fft2(I).*fft2(wavelet));
             C = real(C(p-1:p-1+m-1,q-1:q-1+n-1)); %ask about this
             GaborTransforms(:,:,piece_count) = C;
-          
+           
             
             if(debug == 1)
                 figure(1)

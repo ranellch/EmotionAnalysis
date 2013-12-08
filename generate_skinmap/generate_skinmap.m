@@ -23,7 +23,7 @@ function [out, bin] = generate_skinmap(img_orig)
     out = img_orig;
     bin = zeros(height,width);
     
-    %Apply Grayworld Algorithm for illumination compensation
+    %Apply Grayworld Algorithm for illumination correction
     img = grayworld(img_orig);    
     
     %Convert the image from RGB to YCbCr
