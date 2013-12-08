@@ -5,7 +5,7 @@
 %look for file names and see what string was
 %compare to string we outputted
 
-function accuracy = get_accuracy(emotion, picture, xlfile)
+function accuracy = get_accuracy(emotion, xlfile)
     [NUM,file]=xlsread(xlfile);
     total_correct = 0;
     total = 0;

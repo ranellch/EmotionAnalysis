@@ -9,7 +9,7 @@ function [Face, Eyes, Mouth] = segmentation(colorI)
 
 %DETECTING FACE
 grayI = rgb2gray(colorI);
-FDetect = vision.CascadeObjectDetector;
+FDetect = vision.CascadeObjectDetector('FrontalFaceLBP');
 BB = step(FDetect,grayI);
 
 %Crops image to just the face
