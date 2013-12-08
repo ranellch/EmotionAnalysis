@@ -6,8 +6,9 @@ function [imgout] = kmeansFilter(flnm,k)
     jpg = imread(flnm);    
     jpg = rgb2gray(jpg);
     
-    %subplot(1,2,1); 
-    %imshow(jpg); title('Original Image');% show original image
+    figure
+    subplot(1,2,1); 
+    imshow(jpg); title('Original Image');% show original image
     
     sizeImage= size(jpg);
     sizeL= sizeImage(1)*sizeImage(2);
@@ -28,6 +29,6 @@ function [imgout] = kmeansFilter(flnm,k)
         end
     end
      
-    %subplot(1,2,2);
-    %imshow(imgout); title('Filtered Image'); % show result
+    subplot(1,2,2);
+    imshow(imgout); title('Filtered Image'); % show result
     
