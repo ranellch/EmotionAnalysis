@@ -1,16 +1,16 @@
-function [ feature_vector] = get_featvec_LGBP( img_path )
+function [ feature_vector, Face] = get_featvec_LGBP( img_path )
 %Get feature vector of concatenated LGBP histograms for multiple gabor transforms of 
 %segmented eye and mouth regions 
 
 colorI = imread(img_path);
 %Segment face
 
-[~, Gabor_Face] = detect_face(colorI); %gives two 600 x 1600 pixel images
+[Face, Gabor_Faces] = detect_face(colorI); %gives two 600 x 1600 pixel images
 % Face = segmentation(I);
-
+Gabor_Faces_resized=zeros(1024,1024,18);
 % Resizing images to create a square that can be divided easily 
 for i=1:18
-    Gabor_Face(:,:,i) = imresize(Gabor_Face(:,:,i),[1024 1024]);
+    Gabor_Faces_resized(:,:,i) = imresize(Gabor_Faces(:,:,i),[1024 1024]);
 end 
 %Run Gabor filters on each segment (get 18 different scale/orientation
 %images)
@@ -27,7 +27,7 @@ square_dim = 1024/4;
 
 index=1;
 for i=1:18
-    Face_transform = Gabor_Face(:,:,i);
+    Face_transform = Gabor_Faces_resized(:,:,i);
 %     Eyes_transform = Gabor_Eyes(:,:,i);
 %     Mouth_transform = Gabor_Mouth(:,:,i);
     for j= 1:4

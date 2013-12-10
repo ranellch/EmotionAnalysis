@@ -92,7 +92,7 @@ figure, imshow(skinmap)
      indexarr =find(inEccRange);
      
      flag=0;
-     if isempty(indexarr)
+     if isempty(indexarr) || length(indexarr) ==1
          flag = 1;
      end
      
@@ -106,48 +106,81 @@ figure, imshow(skinmap)
 
          filteredEyes = potEyesSort;
     %    Get five biggest elements 
-         if length(potEyesSort) >= 5
+         if size(potEyesSort,1) >= 5
              filteredEyes = potEyesSort(1:5,:);
          end
 
          X = filteredEyes(:,1);
          Y = filteredEyes(:,2);
 
-    %   Get elements that contain the most variance in grayscale image
-       maxVar1 = 0;
-       for i = 1:5
-           grayscale_object = Igray(S(filteredEyes(i,5)).PixelIdxList);
-           currentVar = var(double(grayscale_object(:)));
-           if currentVar > maxVar1
-               maxVar1 = currentVar;
-               eye1 = i;
+       if size(filteredEyes,1) >=3
+        %   Get elements that contain the most variance in grayscale image
+           maxVar1 = 0;
+           for i = 1:size(filteredEyes,1)
+               grayscale_object = Igray(S(filteredEyes(i,5)).PixelIdxList);
+               currentVar = var(double(grayscale_object(:)));
+               if currentVar > maxVar1
+                   maxVar1 = currentVar;
+                   eye1 = i;
+               end
            end
-       end
-       maxVar2 = 0;
-       for j = 1:4
-           if j == 
-           grayscale_object = Igray(S(filteredEyes(j,5)).PixelIdxList);
-           currentVar = var(double(grayscale_object(:)));
-           if currentVar > maxVar2
-               maxVar2 = currentVar;
-               eye2 = j;
-           end
-       end   
+           maxVar2 = 0;
+           for j = 1:size(filteredEyes,1)
+               if j == eye1;
+                   continue
+               end
+               grayscale_object = Igray(S(filteredEyes(j,5)).PixelIdxList);
+               currentVar = var(double(grayscale_object(:)));
+               if currentVar > maxVar2
+                   maxVar2 = currentVar;
+                   eye2 = j;
+               end
+           end   
+        end
        
-     %Check to make sure they are 
-    
+     %Check to make sure they are actually a pair of eyes.  Look for
+     %significant variance along with horizontal alignment
+     if maxVar1 > 0.5*var(double(Igray(:))) && maxVar2 > 0.5*var(double(Igray(:))) && abs(atand((Y(eye1)-Y(eye2))/(X(eye1)-X(eye2)))) <20 
        figure;
        imshow(eyemap);
        hold on
        plot(X(eye1),Y(eye1), 'or')
        plot(X(eye2),Y(eye2), 'or')
        hold off
-     
-       
-       
-     if ~flag
-        
-     
+     else 
+         flag=1;
+     end
+     end
+
+     if ~flag %Crop face based on position and separation of eyes. Place eyes in the top third of the face window
+        eyes = sortrows([X(eye1) Y(eye1); X(eye2) Y(eye2)], 1);
+        eyedist = pdist(eyes);
+        centerpoint = [eyes(2,1)-eyes(1,1),eyes(2,2)-eyes(1,2)];
+        top = round(centerpoint(2)-eyedist);
+        height = round(2*eyedist);
+        head_top = centerpoint(1)-2*eyedist;
+        if head_top <1
+            head_top=1;
+        end
+        head_bot = centerpoint(1)+2*eyedist;
+        if head_bot > M
+            head_bot=M;
+        end
+        head_left = centerpoint(1)-2*eyedist;
+        if head_left <1
+            head_left=1;
+        end
+        head_right = centerpoint(1)+2*eyedist;
+        if head_right >N
+            head_left=N;
+        end
+        head = skinmap(head_top:head_bot,head_left:head_right);
+        [~,c] = find(head);
+        minCol = min(c);
+        maxCol = max(c);
+        width = maxCol - minCol;
+        faceCrop = [minCol, top, width, height];
+        face = imcrop(I, faceCrop);
      
      else
          %do dumb cropping 
@@ -161,19 +194,6 @@ figure, imshow(skinmap)
         faceCrop = [minCol, top, width, height];
         face = imcrop(I, faceCrop);
      end
-
-
-
-    % eyedist = pdist(eyes);
-    % eyes  = sortrows(eyes,2);
-    % lefteye = eyes(1,:);
-    % righteye = eyes(2,:);
-    % 
-    % %show eye region
-    % eyebox = I(lefteye(1)-.5*eyedist:lefteye(1)+.5*eyedist,lefteye(2)-.5*eyedist:righteye(2)+.5*eyedist,:);
-    % figure, imshow(eyebox)
-
-
 
 %show face
  figure, imshow(face)
