@@ -1,4 +1,4 @@
-function [GaborTransforms] = apply_gabor_wavelet(I, debug)
+function [GaborTransforms, wavelet] = apply_gabor_wavelet(I, debug)
 
     %Convert image to double image
     I = im2double(I);

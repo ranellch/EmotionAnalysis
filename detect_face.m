@@ -1,21 +1,23 @@
-function [ face, face_gabors] = detect_face( I )
+function [ face, face_gabors, S] = detect_face( I )
 %FACE = DETECT_FACE(I) finds single face in color image I based on (1) skin
-%detection using k-means clustering of feature vectors built from mean CbCr
-%values and mean Gabor transform values in grid boxes and (2) eye detection by finding
+%detection using k-means clustering of feature vectors built from CbCr
+%values and Gabor transform values in resized image and (2) eye detection by finding
 %holes in skin mask.  FACE is a cropped version of image I
 
-%Generate Gabor filtered images
+%Generate Gabor filtered images from fullsize image
 Igray=rgb2gray(I);
+H = fspecial('gaussian',[9 9], 3);
+Igray = imfilter(Igray,H, 'same');
 Igabors = apply_gabor_wavelet(Igray,0);
 
 %Apply Grayworld Algorithm for illumination compensation/color balancing
 Ibalanced = grayworld(I);
-%Convert image from RGB to YCbCr
+%Convert image from RGB to YCbCr 
 Iycbcr = rgb2ycbcr(Ibalanced);
 Cb = Iycbcr(:,:,2);
 Cr = Iycbcr(:,:,3);
 
-blk_size = 20;
+blk_size = 10;
 
 %Mirror pad matrices so they are divisible by blk_size
 [M, N] = size(Igray);
@@ -39,7 +41,7 @@ for i= 1:vec_rows
         allvecs(index,1) = mean2(Cb_block);
         allvecs(index,2) = mean2(Cr_block);
         for k = 1:18
-            allvecs(index,2+k) = mean2(Igabors((i-1)*blk_size+1:i*blk_size,(j-1)*blk_size+1:j*blk_size,k));
+            allvecs(index,2+k) = mean2(Igabors((i-1)*blk_size+1:i*blk_size,(j-1)*blk_size+1:j*blk_size,k));  
         end
     end
 end
@@ -66,7 +68,7 @@ figure, imshow(Iseg)
 colormap(jet)
 
 %get largest skin region
-Iskin = logical(Iskin(1:M,1:N));
+Iskin = logical(Iskin);
 skinmap = zeros(size(Iskin));
 
 CC = bwconncomp(Iskin);
@@ -76,61 +78,98 @@ numPixels = cellfun(@numel,CC.PixelIdxList);
 skinmap(CC.PixelIdxList{idx}) = 1;
 figure, imshow(skinmap)
 
-% %find eyes
-% %get holes in skinmap
-% eyemap = ~skinmap;
-% CC = bwconncomp(eyemap);
-% S = regionprops(CC,'Centroid');
-% numholes = size(S,1);
-% allcenters = zeros(numholes,2);
-% for i = 1:numholes
-%     allcenters(i,:) = S(i).Centroid;
-% end
-% %sort by vertical position 
-% allcenters = sortrows(allcenters,-1);
-% %find two holes horizontally across from each other within some margin of
-% %error
-% flag = 0;
-% for i = 1:numholes
-%     compare1 = allcenters(i,1);
-%     for j = 1:numholes
-%         if j ==i
-%             continue
-%         end
-%         compare2 = allcenters(j,1);
-%         if compare1 <= compare2 + 50 && compare1>= compare2 - 50
-%             eyes = [allcenters(i,:); allcenters(j,:)];
-%             flag = 1;
-%             break
-%         end
-%     end
-%     if flag == 1
-%         break
-%     end
-% end
-% 
-% eyedist = pdist(eyes);
-% eyes  = sortrows(eyes,2);
-% lefteye = eyes(1,:);
-% righteye = eyes(2,:);
-% 
-% %show eye region
-% eyebox = I(lefteye(1)-.5*eyedist:lefteye(1)+.5*eyedist,lefteye(2)-.5*eyedist:righteye(2)+.5*eyedist,:);
-% figure, imshow(eyebox)
+%**********Find Eyes*****************************
+ %get holes in skinmap
+   eyemap = imclearborder(~skinmap);
+%    figure, imshow(eyemap)
 
-%cropping 
-[r,c] = find(skinmap);
-minRow = min(r);
-minCol = min(c);
-maxCol = max(c);
-top = round(minRow+0.3*(maxCol-minCol));
-height = round(1.1*(maxCol - minCol));
-width = maxCol - minCol;
-faceCrop = [minCol, top, width, height];
-face = imcrop(I, faceCrop);
+   CC = bwconncomp(eyemap);
+   S = regionprops(CC,'all');
+
+%   Checking all blobs in image and returning array of eccentricity values 
+%   Filtering by range of eye eccentricity and returning index values 
+     inEccRange = [S.Eccentricity] > 0.75 & [S.Eccentricity] < 0.9;
+     indexarr =find(inEccRange);
+     
+     flag=0;
+     if isempty(indexarr)
+         flag = 1;
+     end
+     
+     if ~flag
+    %    Creating four dimensional array with each column representing :
+    %    xcoord of center | ycoord of center  | eccentricity | area  
+         potEyes = [cat(1,S(indexarr).Centroid) [S(indexarr).Eccentricity]' [S(indexarr).Area]' indexarr'];
+
+    %    Sorting based on area to eliminate small blobs 
+         potEyesSort = sortrows(potEyes,-4);
+
+         filteredEyes = potEyesSort;
+    %    Get five biggest elements 
+         if length(potEyesSort) >= 5
+             filteredEyes = potEyesSort(1:5,:);
+         end
+
+         X = filteredEyes(:,1);
+         Y = filteredEyes(:,2);
+
+    %   Get elements that contain the most variance in grayscale image
+       maxVar1 = 0;
+       for i = 1:5
+           grayscale_object = Igray(S(filteredEyes(i,5)).PixelIdxList);
+           currentVar = var(double(grayscale_object(:)));
+           if currentVar > maxVar1
+               maxVar1 = currentVar;
+               eye1 = i;
+           end
+       end
+       maxVar2 = 0;
+       for j = 1:4
+           if j == eye1;
+               continue
+           end
+           grayscale_object = Igray(S(filteredEyes(j,5)).PixelIdxList);
+           currentVar = var(double(grayscale_object(:)));
+           if currentVar > maxVar2
+               maxVar2 = currentVar;
+               eye2 = j;
+           end
+       end   
+       
+     %Check to make sure they are 
+    
+       figure;
+       imshow(eyemap);
+       hold on
+       plot(X(eye1),Y(eye1), 'or')
+       plot(X(eye2),Y(eye2), 'or')
+       hold off
+     
+       
+       
+     if ~flag
+        eyedist = pdist([X(eye1) Y(eye1); X(eye2) Y(eye2)];
+    
+        %show face 
+        eyebox = I(lefteye(1)-.5*eyedist:lefteye(1)+.5*eyedist,lefteye(2)-.5*eyedist:righteye(2)+.5*eyedist,:);
+        figure, imshow(eyebox)
+     
+     
+     else
+         %do dumb cropping 
+        [r,c] = find(skinmap);
+        minRow = min(r);
+        minCol = min(c);
+        maxCol = max(c);
+        top = round(minRow+0.3*(maxCol-minCol));
+        height = round(1.1*(maxCol - minCol));
+        width = maxCol - minCol;
+        faceCrop = [minCol, top, width, height];
+        face = imcrop(I, faceCrop);
+     end
 
 %show face
-figure, imshow(face)
+ figure, imshow(face)
 
 face_gabors = Igabors(top:top+height,minCol:maxCol,:);
 end
