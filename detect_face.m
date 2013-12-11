@@ -68,7 +68,7 @@ Iseg = Iseg(1:M,1:N)./k;
 colormap(jet)
 
 %get largest skin region
-Iskin = logical(Iskin);
+Iskin = logical(Iskin(1:M,1:N));
 skinmap = zeros(size(Iskin));
 
 CC = bwconncomp(Iskin);
