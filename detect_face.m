@@ -180,6 +180,12 @@ skinmap(CC.PixelIdxList{idx}) = 1;
         top = minRow+round(0.5*(centerpoint(2)-minRow));
         height = 2*round((centerpoint(2)-minRow));
         bot = top+height;
+        if top <1
+            top=1;
+        end
+        if bot > M
+            bot=M;
+        end
         left = min(c);
         right = max(c);
         face = I(top:bot, left:right,:);
