@@ -64,7 +64,7 @@ end
  
 %show segmented clusters
 Iseg = Iseg(1:M,1:N)./k;
-figure, imshow(Iseg)
+%figure, imshow(Iseg)
 colormap(jet)
 
 %get largest skin region
@@ -76,12 +76,12 @@ numPixels = cellfun(@numel,CC.PixelIdxList);
 [~,idx] = max(numPixels);
 
 skinmap(CC.PixelIdxList{idx}) = 1;
-figure, imshow(skinmap)
+%figure, imshow(skinmap)
 
 %**********Find Eyes*****************************
  %get holes in skinmap
    eyemap = imclearborder(~skinmap);
-%    figure, imshow(eyemap)
+%    %figure, imshow(eyemap)
 
    CC = bwconncomp(eyemap);
    S = regionprops(CC,'all');
@@ -112,7 +112,9 @@ figure, imshow(skinmap)
 
          X = filteredEyes(:,1);
          Y = filteredEyes(:,2);
-
+         eye1 = 1;
+         eye2 = 2;
+         
        if size(filteredEyes,1) >=3
         %   Get elements that contain the most variance in grayscale image
            maxVar1 = 0;
@@ -138,26 +140,28 @@ figure, imshow(skinmap)
            end   
         end
        
-     %Check to make sure they are actually a pair of eyes.  Look for
-     %significant variance along with horizontal alignment
-     if maxVar1 > 0.5*var(double(Igray(:))) && maxVar2 > 0.5*var(double(Igray(:))) && abs(atand((Y(eye1)-Y(eye2))/(X(eye1)-X(eye2)))) <20 
-       figure;
-       imshow(eyemap);
-       hold on
-       plot(X(eye1),Y(eye1), 'or')
-       plot(X(eye2),Y(eye2), 'or')
-       hold off
-     else 
-         flag=1;
-     end
+         %Check to make sure they are actually a pair of eyes.  Look for
+         %significant variance along with horizontal alignment
+         if abs(atand((Y(eye1)-Y(eye2))/(X(eye1)-X(eye2)))) <20 
+           %figure;
+           imshow(eyemap);
+           hold on
+           plot(X(eye1),Y(eye1), 'or')
+           plot(X(eye2),Y(eye2), 'or')
+           hold off
+         else 
+             flag=1;
+         end
      end
 
      if ~flag %Crop face based on position and separation of eyes. Place eyes in the top third of the face window
         eyes = sortrows([X(eye1) Y(eye1); X(eye2) Y(eye2)], 1);
         eyedist = pdist(eyes);
-        centerpoint = [eyes(2,1)-eyes(1,1),eyes(2,2)-eyes(1,2)];
-        top = round(centerpoint(2)-eyedist);
-        height = round(2*eyedist);
+        centerpoint = [eyes(1,1)+(eyes(2,1)-eyes(1,1))/2,eyes(1,2)+(eyes(2,2)-eyes(1,2))/2];
+        [r,~] = find(skinmap);
+        minRow = min(r);
+        top = minRow+round(0.5*(centerpoint(2)-minRow));
+        height = 2*round((centerpoint(2)-minRow));
         head_top = centerpoint(1)-2*eyedist;
         if head_top <1
             head_top=1;
@@ -172,16 +176,14 @@ figure, imshow(skinmap)
         end
         head_right = centerpoint(1)+2*eyedist;
         if head_right >N
-            head_left=N;
+            head_right=N;
         end
         head = skinmap(head_top:head_bot,head_left:head_right);
         [~,c] = find(head);
         minCol = min(c);
         maxCol = max(c);
         width = maxCol - minCol;
-        faceCrop = [minCol, top, width, height];
-        face = imcrop(I, faceCrop);
-     
+        face 
      else
          %do dumb cropping 
         [r,c] = find(skinmap);
@@ -190,14 +192,19 @@ figure, imshow(skinmap)
         maxCol = max(c);
         top = round(minRow+0.3*(maxCol-minCol));
         height = round(1.1*(maxCol - minCol));
-        width = maxCol - minCol;
-        faceCrop = [minCol, top, width, height];
-        face = imcrop(I, faceCrop);
+        bot = top+height;
+        if top <1
+            top=1;
+        end
+        if bot > M
+            height=M-top;
+        end
+        face = I(top:bot,minCol:maxCol,:);
      end
 
 %show face
- figure, imshow(face)
+ %%figure, imshow(face)
 
-face_gabors = Igabors(top:top+height,minCol:maxCol,:);
+face_gabors = Igabors(top:top+height,minCol:minCol+width,:);
 end
 

@@ -5,7 +5,7 @@ function [GaborTransforms, wavelet] = apply_gabor_wavelet(I, debug)
 
     npeaks = 1;
     theta = [0 30 60 90 120 150];
-    lambda = [2 4 8];
+    lambda = [2 8 16];
 
     %Get the size of the input image
     [m,n] = size(I);

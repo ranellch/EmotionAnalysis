@@ -56,7 +56,7 @@ for i = 1:vec_rows
         %look for skin tone, show binary image of object with Cb and Cr
         %centers in skin tone range
         Iseg((i-1)*blk_size+1:i*blk_size,(j-1)*blk_size+1:j*blk_size) = idx(index);
-        if (c(idx(index),1) > 100 && c(idx(index),1) < 140) && (c(idx(index),2) > 135 && c(idx(index),2) < 170) 
+        if (c(idx(index),1) > 100 && c(idx(index),1) < 140) && (c(idx(index),2) > 130 && c(idx(index),2) < 175) 
             Iskin((i-1)*blk_size+1:i*blk_size,(j-1)*blk_size+1:j*blk_size) = 1; 
         end
     end
@@ -143,12 +143,12 @@ skinmap(CC.PixelIdxList{idx}) = 1;
          %Check to make sure they are actually a pair of eyes.  Look for
          %significant variance along with horizontal alignment
          if abs(atand((Y(eye1)-Y(eye2))/(X(eye1)-X(eye2)))) <20 
-           %figure;
-           imshow(eyemap);
-           hold on
-           plot(X(eye1),Y(eye1), 'or')
-           plot(X(eye2),Y(eye2), 'or')
-           hold off
+%            %figure;
+%            imshow(eyemap);
+%            hold on
+%            plot(X(eye1),Y(eye1), 'or')
+%            plot(X(eye2),Y(eye2), 'or')
+%            hold off
          else 
              flag=1;
          end
@@ -158,10 +158,6 @@ skinmap(CC.PixelIdxList{idx}) = 1;
         eyes = sortrows([X(eye1) Y(eye1); X(eye2) Y(eye2)], 1);
         eyedist = pdist(eyes);
         centerpoint = [eyes(1,1)+(eyes(2,1)-eyes(1,1))/2,eyes(1,2)+(eyes(2,2)-eyes(1,2))/2];
-        [r,~] = find(skinmap);
-        minRow = min(r);
-        top = minRow+round(0.5*(centerpoint(2)-minRow));
-        height = 2*round((centerpoint(2)-minRow));
         head_top = centerpoint(1)-2*eyedist;
         if head_top <1
             head_top=1;
@@ -179,36 +175,35 @@ skinmap(CC.PixelIdxList{idx}) = 1;
             head_right=N;
         end
         head = skinmap(head_top:head_bot,head_left:head_right);
-        [~,c] = find(head);
-        minCol = min(c);
-        maxCol = max(c);
-        width = maxCol - minCol;
-        faceCrop = [minCol, top, width, height];
-        face = imcrop(I, faceCrop);
-     
+        [r,c] = find(head);
+        minRow = min(r);
+        top = minRow+round(0.5*(centerpoint(2)-minRow));
+        height = 2*round((centerpoint(2)-minRow));
+        bot = top+height;
+        left = min(c);
+        right = max(c);
+        face = I(top:bot, left:right,:);
      else
          %do dumb cropping 
         [r,c] = find(skinmap);
         minRow = min(r);
-        minCol = min(c);
-        maxCol = max(c);
-        top = round(minRow+0.3*(maxCol-minCol));
-        height = round(1.1*(maxCol - minCol));
+        left = min(c);
+        right = max(c);
+        top = round(minRow+0.3*(right-left));
+        height = round(1.1*(right - left));
         bot = top+height;
         if top <1
             top=1;
         end
         if bot > M
-            height=M-top;
+            bot=M;
         end
-        width = maxCol - minCol;
-        faceCrop = [minCol, top, width, bot-top];
-        face = imcrop(I, faceCrop);
+        face = I(top:bot,left:right,:);
      end
 
 %show face
  %%figure, imshow(face)
 
-face_gabors = Igabors(top:top+height,minCol:minCol+width,:);
+face_gabors = Igabors(top:bot,left:right,:);
 end
 
