@@ -15,7 +15,7 @@ function class_split(featvecfile)
         emotion = imageInfo{imagePosition,2};
         pic = imageInfo{imagePosition,1};
 
-        for imagePostion=1:numImages
+        for imagePostion=1:num
             %happy emotions for classifier
             if strcmp('happy',emotion)
             	update(happy_ct);
