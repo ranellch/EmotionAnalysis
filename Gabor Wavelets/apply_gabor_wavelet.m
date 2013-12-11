@@ -1,11 +1,11 @@
-function [GaborTransforms] = apply_gabor_wavelet(I, debug)
+function [GaborTransforms, wavelet] = apply_gabor_wavelet(I, debug)
 
     %Convert image to double image
     I = im2double(I);
 
     npeaks = 1;
     theta = [0 30 60 90 120 150];
-    lambda = [2 4 8];
+    lambda = [2 8 16];
 
     %Get the size of the input image
     [m,n] = size(I);
@@ -31,7 +31,7 @@ function [GaborTransforms] = apply_gabor_wavelet(I, debug)
             padded_wavelet=wavelet;
             padded_wavelet(pad_height, pad_width) = 0;
             C = ifft2(G.*fft2(padded_wavelet));
-            C = real(C(p-1:p-1+m-1,q-1:q-1+n-1)); %ask about this
+            C = real(C(p:p+m-1,q:q+n-1)); %ask about this
             GaborTransforms(:,:,piece_count) = C;
           
             
