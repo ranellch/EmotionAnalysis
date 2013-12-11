@@ -1,76 +1,69 @@
 
-function class_split(featvecfile)
+function [featureCat,emotions,nb,testInfo,testPositions] = class_split(featvecfile)
  
-    [num, imageInfo]=xlsread('imageInfo.xls');
+    [~, imageInfo]=xlsread('imageInfo.xlsx');
     
-    images = []; positions = []; emotions = [];
-    testInfo = []; testPositions = [];
+    flag = [3 4 7 9 19 48 55 56 57 59 65 66 67 68 74 75 76 77 78 79 80 81 84 85 86 89 94 95 96 98 100 101];
+%     images = []; positions = []; 
+    emotions = [];
+    testInfo = []; testPositions = []; featureCat = [];
     happy_ct = 0; sad_ct = 0; sur_ct = 0; angry_ct = 0; neut_ct = 0;
 
     % first round has pictures startBound to endBound as being predicted
     startBound = 0;
-    endBound = 6;
+    endBound = 10;
 
-    for i=1:4
-        emotion = imageInfo{imagePosition,2};
-        pic = imageInfo{imagePosition,1};
+%         emotion = imageInfo{imagePosition,2};
+%         pic = imageInfo{imagePosition,1};
 
-        for imagePostion=1:numImages
+        for imagePosition=1:length(imageInfo)
             %happy emotions for classifier
-            if strcmp('happy',emotion)
-            	update(happy_ct);
-            elseif strcmp('sad',emotion)
-            	update(sad_ct);
-            elseif strcmp('surprised',emotion)
-            	update(sur_ct);
-            elseif strcmp('angry',emotion)
-            	update(angry_ct);
-            elseif strcmp('neutral',emotion)
-             	update(neut_ct);
+            if not(ismember(imagePosition,flag(:)))
+                if strcmp('happy', imageInfo{imagePosition,2})
+                	update(happy_ct,imagePosition);
+                    happy_ct = happy_ct + 1; 
+                elseif strcmp('sad',imageInfo{imagePosition,2})
+                    update(sad_ct,imagePosition);
+                    sad_ct = sad_ct +1;
+                elseif strcmp('surprised', imageInfo{imagePosition,2})
+                	update(sur_ct,imagePosition);
+                    sur_ct = sur_ct + 1;
+                elseif strcmp('angry', imageInfo{imagePosition,2})
+                    update(angry_ct,imagePosition);
+                    angry_ct = angry_ct + 1;
+                elseif strcmp('neutral', imageInfo{imagePosition,2})
+                	update(neut_ct,imagePosition);
+                    neut_ct = neut_ct + 1; 
+                end
             end
+            happy_ct
+            sad_ct
+            sur_ct
+            angry_ct
+            neut_ct 
+            
         end   
-
+        
+        size(featureCat)
+  
         % call the build_classifier and predict
-        nb = build_classifier(images, emotions, positions);
-        predictions = predict(nb, testInfo);
+        nb = NaiveBayes.fit(featureCat, emotions,'Prior','uniform','Distribution', 'mvmn');
         
-        for i=1:length(testPositions)
-           row = testPositions(i);
-           prediction = predictions(i);
-           C = strcat('C',i,':C',i);
-           xlswrite('imageInfo.xls', prediction, C);
-        end
-         
-        %  call to accuracy function
-        accuracy_of_happy = get_acc('happy', 'imageInfo.xls') %call happy
-        accuracy_of_neut = get_acc('neutral', 'imageInfo.xls') %call neutral
-        accuracy_of_sad = get_acc('sad', 'imageInfo.xls') %call sad
-        accuracy_of_supr = get_acc('suprised', 'imageInfo.xls') %call suprised
-        accuracy_of_angry = get_acc('angry', 'imageInfo.xls') %call angry
-        accuracy_total = (accuracy_of_happy + accuracy_of_neut + accuracy_of_sad + accuracy_of_supr + accuracy_of_angry)/5
-        
-        pause; 
-
-        % shift the bounds to run a different set of testers
-        startBound = startBound + 5;
-        endBound = endBound + 5;
-    end
+ 
 
 
-
-function update(count)
-	count = count + 1;
-    if (count > startBound) && (count < endBound)   
-        % ADD IMAGE TO TESTING
-        temp = csvread(featvecfile, position,:);
-        testInfo = [testInfo; temp];
-        testPositions = [testPositions; imagePosition];
+function update(count,imagePosition)
+    if (count > startBound) && (count <= endBound)   
+        % ADD IMAGE TO CLASSIFIER
+        temp = csvread(featvecfile, imagePosition-1,0,[imagePosition-1,0,imagePosition-1,73669]);
+        featureCat= [featureCat; temp];
+        emotions  = [emotions ; cellstr(imageInfo{imagePosition,2})]
     else
-        % ADD IMAGE TO CLASSIFER
+        % ADD IMAGE TO TESTING
         % add to each array
-        images = [images; pic];
-        emotions = [emotions; emotion];
-        positions = [positions; imagePosition];
+        temp = csvread(featvecfile, imagePosition-1,0,[imagePosition-1,0,imagePosition-1,73669]);
+        testInfo = [testInfo; temp];
+        testPositions = [testPositions; imagePosition]
     end
 end
 

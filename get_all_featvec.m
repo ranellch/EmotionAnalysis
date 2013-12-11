@@ -13,7 +13,7 @@ for i = 1:numImages
        imwrite(faceImage,int2str(i),'JPEG');
 end
 % insert featvec into excel sheet
- csvwrite('featvec.csv', all_featvec);
+ csvwrite('featvec2.csv', all_featvec);
 
 end
 
