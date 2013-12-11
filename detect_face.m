@@ -8,10 +8,11 @@ function [ face, face_gabors, S] = detect_face( I )
 Igray=rgb2gray(I);
 H = fspecial('gaussian',[9 9], 3);
 Igray = imfilter(Igray,H, 'same');
-Igabors = apply_gabor_wavelet(Igray,0);
+Igabors = apply_gabor_wavelet(Igray,1);
 
 %Apply Grayworld Algorithm for illumination compensation/color balancing
 Ibalanced = grayworld(I);
+figure, imshow(Ibalanced)
 %Convert image from RGB to YCbCr 
 Iycbcr = rgb2ycbcr(Ibalanced);
 Cb = Iycbcr(:,:,2);
@@ -64,7 +65,7 @@ end
  
 %show segmented clusters
 Iseg = Iseg(1:M,1:N)./k;
-%figure, imshow(Iseg)
+figure, imshow(Iseg)
 colormap(jet)
 
 %get largest skin region
@@ -76,7 +77,7 @@ numPixels = cellfun(@numel,CC.PixelIdxList);
 [~,idx] = max(numPixels);
 
 skinmap(CC.PixelIdxList{idx}) = 1;
-%figure, imshow(skinmap)
+figure, imshow(skinmap)
 
 %**********Find Eyes*****************************
  %get holes in skinmap
@@ -143,12 +144,12 @@ skinmap(CC.PixelIdxList{idx}) = 1;
          %Check to make sure they are actually a pair of eyes.  Look for
          %significant variance along with horizontal alignment
          if abs(atand((Y(eye1)-Y(eye2))/(X(eye1)-X(eye2)))) <20 
-%            %figure;
-%            imshow(eyemap);
-%            hold on
-%            plot(X(eye1),Y(eye1), 'or')
-%            plot(X(eye2),Y(eye2), 'or')
-%            hold off
+           %figure;
+           imshow(skinmap);
+           hold on
+           plot(X(eye1),Y(eye1), 'or')
+           plot(X(eye2),Y(eye2), 'or')
+           hold off
          else 
              flag=1;
          end
@@ -208,7 +209,7 @@ skinmap(CC.PixelIdxList{idx}) = 1;
      end
 
 %show face
- %%figure, imshow(face)
+ figure, imshow(face)
 
 face_gabors = Igabors(top:bot,left:right,:);
 end

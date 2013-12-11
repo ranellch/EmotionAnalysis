@@ -16,6 +16,7 @@ function [featureCat,emotions,nb,testInfo,testPositions] = class_split(featvecfi
 %         emotion = imageInfo{imagePosition,2};
 %         pic = imageInfo{imagePosition,1};
 
+
         for imagePosition=1:length(imageInfo)
             %happy emotions for classifier
             if not(ismember(imagePosition,flag(:)))
